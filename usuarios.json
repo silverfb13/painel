@@ -6,5 +6,9 @@
     "admin": {
         "senha": "admin",
         "expira": 0
+    },
+    "teste": {
+        "senha": "teste",
+        "expira": 0
     }
 }
