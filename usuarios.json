@@ -10,9 +10,5 @@
     "usuario2": {
         "senha": "teste456",
         "expira": 0
-    },
-    "luiz": {
-        "senha": "lfbs1706",
-        "expira": 0
     }
 }
