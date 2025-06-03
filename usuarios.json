@@ -10,9 +10,5 @@
     "usuario2": {
         "senha": "teste456",
         "expira": 0
-    },
-    "aldemir": {
-        "senha": "tester",
-        "expira": 0
     }
 }
