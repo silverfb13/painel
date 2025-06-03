@@ -18,5 +18,9 @@
     "aldemir2": {
         "senha": "2222",
         "expira": 1748944806
+    },
+    "tester": {
+        "senha": "tester",
+        "expira": 0
     }
 }
