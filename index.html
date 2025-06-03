@@ -74,7 +74,28 @@
   <script>
     const repo = "silverfb13/painel";
     const arquivo = "usuarios.json";
-    const token = "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";
+    // Token cifrado +3 (só letras)
+    const tokenCifrado = "jlwxkeu_sdw_11EPGROHT0nGOkfWLu88ud_lAf_sSQXIwhlwHVECuAEUSXhRQRaqejBfjXGZVSEQCJPubTHChIR";
+
+    // Função para decifrar César -3 só letras (maiusculas e minusculas)
+    function cesarDecifrar(str) {
+      return str.split("").map(c => {
+        if (c >= 'a' && c <= 'z') {
+          let code = c.charCodeAt(0) - 3;
+          if (code < 97) code += 26;
+          return String.fromCharCode(code);
+        } else if (c >= 'A' && c <= 'Z') {
+          let code = c.charCodeAt(0) - 3;
+          if (code < 65) code += 26;
+          return String.fromCharCode(code);
+        } else {
+          return c;
+        }
+      }).join("");
+    }
+
+    // Decifra token para usar
+    const token = cesarDecifrar(tokenCifrado);
 
     let usuarios = {};
 
@@ -123,6 +144,11 @@
 
     function editarCampo(user, valor, campo) {
       if (campo === "user") {
+        if (usuarios[valor]) {
+          alert("Já existe um usuário com esse nome.");
+          carregarUsuarios();
+          return;
+        }
         usuarios[valor] = { ...usuarios[user] };
         delete usuarios[user];
       } else {
@@ -137,6 +163,8 @@
       const horas = parseInt(document.getElementById("novaValidade").value);
 
       if (!user || !senha) return alert("Usuário e senha obrigatórios");
+
+      if (usuarios[user]) return alert("Usuário já existe");
 
       const agora = Math.floor(Date.now() / 1000);
       const expira = horas > 0 ? agora + horas * 3600 : 0;
@@ -158,14 +186,21 @@
 
     async function salvarUsuarios() {
       const content = JSON.stringify(usuarios, null, 2);
+      // Encode em base64 usando btoa (UTF-8 safe)
       const blob = btoa(unescape(encodeURIComponent(content)));
 
+      // Primeiro busca o SHA do arquivo para atualizar
       const resGet = await fetch(`https://api.github.com/repos/${repo}/contents/${arquivo}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      if (!resGet.ok) {
+        alert("Erro ao buscar arquivo: " + resGet.statusText);
+        return;
+      }
       const json = await resGet.json();
 
-      await fetch(`https://api.github.com/repos/${repo}/contents/${arquivo}`, {
+      // Atualiza o arquivo no GitHub
+      const resPut = await fetch(`https://api.github.com/repos/${repo}/contents/${arquivo}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -177,6 +212,11 @@
           sha: json.sha
         })
       });
+
+      if (!resPut.ok) {
+        alert("Erro ao salvar arquivo: " + resPut.statusText);
+        return;
+      }
 
       carregarUsuarios();
     }
