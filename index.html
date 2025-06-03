@@ -74,35 +74,38 @@
   <script>
     const repo = "silverfb13/painel";
     const arquivo = "usuarios.json";
-    // Token cifrado +3 (só letras)
-    const tokenCifrado = "jlwxkeu_sdw_11EPGROHT0nGOkfWLu88ud_lAf_sSQXIwhlwHVECuAEUSXhRQRaqejBfjXGZVSEQCJPubTHChIR";
 
-    // Função para decifrar César -3 só letras (maiusculas e minusculas)
-    function cesarDecifrar(str) {
-      return str.split("").map(c => {
+    // Token com cifra César +3 nas letras
+    const tokenCifrado = "jlwkerk_sdw_44EPOGTH3tsr5JPLNDJ_ZaK3kJyR39fOPCOZS4fA9hKKlc9JtU5xxPNxnCDLLAQSQMTW2WRV7WVW";
+
+    // Decifra César -3 só nas letras
+    function cifraCesarMenos3(str) {
+      return [...str].map(c => {
         if (c >= 'a' && c <= 'z') {
-          let code = c.charCodeAt(0) - 3;
-          if (code < 97) code += 26;
-          return String.fromCharCode(code);
+          return String.fromCharCode((c.charCodeAt(0) - 97 + 26 - 3) % 26 + 97);
         } else if (c >= 'A' && c <= 'Z') {
-          let code = c.charCodeAt(0) - 3;
-          if (code < 65) code += 26;
-          return String.fromCharCode(code);
+          return String.fromCharCode((c.charCodeAt(0) - 65 + 26 - 3) % 26 + 65);
         } else {
           return c;
         }
-      }).join("");
+      }).join('');
     }
 
-    // Decifra token para usar
-    const token = cesarDecifrar(tokenCifrado);
+    const token = cifraCesarMenos3(tokenCifrado);
 
     let usuarios = {};
 
     async function carregarUsuarios() {
-      const res = await fetch(`https://raw.githubusercontent.com/${repo}/main/${arquivo}?t=${Date.now()}`);
-      usuarios = await res.json();
-      atualizarTabela();
+      try {
+        const res = await fetch(`https://raw.githubusercontent.com/${repo}/main/${arquivo}?t=${Date.now()}`);
+        if (!res.ok) throw new Error(`Erro ao carregar usuários: ${res.status}`);
+        usuarios = await res.json();
+        atualizarTabela();
+      } catch(e) {
+        alert(e.message);
+        const tbody = document.getElementById("usuariosBody");
+        tbody.innerHTML = `<tr><td colspan="4">Erro ao carregar usuários</td></tr>`;
+      }
     }
 
     function atualizarTabela() {
@@ -140,12 +143,16 @@
         tr.append(tdUser, tdSenha, tdExpira, tdAcoes);
         tbody.appendChild(tr);
       });
+
+      if(Object.keys(usuarios).length === 0){
+        tbody.innerHTML = `<tr><td colspan="4">Nenhum usuário encontrado</td></tr>`;
+      }
     }
 
     function editarCampo(user, valor, campo) {
       if (campo === "user") {
-        if (usuarios[valor]) {
-          alert("Já existe um usuário com esse nome.");
+        if(usuarios[valor]) {
+          alert("Usuário já existe!");
           carregarUsuarios();
           return;
         }
@@ -163,8 +170,7 @@
       const horas = parseInt(document.getElementById("novaValidade").value);
 
       if (!user || !senha) return alert("Usuário e senha obrigatórios");
-
-      if (usuarios[user]) return alert("Usuário já existe");
+      if (usuarios[user]) return alert("Usuário já existe!");
 
       const agora = Math.floor(Date.now() / 1000);
       const expira = horas > 0 ? agora + horas * 3600 : 0;
@@ -185,40 +191,49 @@
     }
 
     async function salvarUsuarios() {
-      const content = JSON.stringify(usuarios, null, 2);
-      // Encode em base64 usando btoa (UTF-8 safe)
-      const blob = btoa(unescape(encodeURIComponent(content)));
+      try {
+        const content = JSON.stringify(usuarios, null, 2);
+        const contentBase64 = btoa(unescape(encodeURIComponent(content)));
 
-      // Primeiro busca o SHA do arquivo para atualizar
-      const resGet = await fetch(`https://api.github.com/repos/${repo}/contents/${arquivo}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (!resGet.ok) {
-        alert("Erro ao buscar arquivo: " + resGet.statusText);
-        return;
+        // Obter sha do arquivo atual
+        const resGet = await fetch(`https://api.github.com/repos/${repo}/contents/${arquivo}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (!resGet.ok) {
+          const errGet = await resGet.json();
+          alert("Erro ao obter SHA do arquivo:\n" + JSON.stringify(errGet));
+          return;
+        }
+
+        const jsonGet = await resGet.json();
+
+        // Atualizar arquivo no GitHub
+        const resPut = await fetch(`https://api.github.com/repos/${repo}/contents/${arquivo}`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: "Atualizar usuarios.json",
+            content: contentBase64,
+            sha: jsonGet.sha,
+            branch: "main"
+          })
+        });
+
+        if (!resPut.ok) {
+          const errPut = await resPut.json();
+          alert("Erro ao atualizar arquivo:\n" + JSON.stringify(errPut));
+          return;
+        }
+
+        alert("Usuários atualizados com sucesso!");
+        carregarUsuarios();
+      } catch(e) {
+        alert("Erro ao salvar usuários: " + e.message);
       }
-      const json = await resGet.json();
-
-      // Atualiza o arquivo no GitHub
-      const resPut = await fetch(`https://api.github.com/repos/${repo}/contents/${arquivo}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          message: "Atualizar usuarios.json",
-          content: blob,
-          sha: json.sha
-        })
-      });
-
-      if (!resPut.ok) {
-        alert("Erro ao salvar arquivo: " + resPut.statusText);
-        return;
-      }
-
-      carregarUsuarios();
     }
 
     carregarUsuarios();
