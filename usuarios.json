@@ -10,5 +10,9 @@
     "usuario2": {
         "senha": "teste456",
         "expira": 0
+    },
+    "tester": {
+        "senha": "tester",
+        "expira": 0
     }
 }
