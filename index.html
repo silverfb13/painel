@@ -3,77 +3,182 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Painel de Usuários IPTV</title>
+  <title>Painel IPTV</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #111;
-      color: #fff;
+      font-family: sans-serif;
+      background: #f0f2f5;
       margin: 0;
       padding: 20px;
     }
-    h1 {
-      text-align: center;
-    }
+    h1 { color: #333; }
     table {
       width: 100%;
       border-collapse: collapse;
-      background-color: #222;
-      margin-top: 20px;
+      background: white;
+      margin-bottom: 20px;
     }
     th, td {
-      padding: 10px;
-      border: 1px solid #444;
+      padding: 8px;
+      border: 1px solid #ddd;
       text-align: left;
     }
-    th {
-      background-color: #333;
+    input[type="text"], input[type="number"] {
+      padding: 5px;
+      width: 100%;
+      box-sizing: border-box;
     }
-    tr:nth-child(even) {
-      background-color: #1a1a1a;
+    button {
+      padding: 6px 10px;
+      margin: 2px;
+      cursor: pointer;
     }
+    .actions {
+      display: flex;
+      gap: 5px;
+    }
+    #formNovo {
+      background: #fff;
+      padding: 10px;
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+    }
+    label { font-weight: bold; display: block; margin-top: 10px; }
   </style>
 </head>
 <body>
-  <h1>Painel de Usuários</h1>
+  <h1>Painel de Usuários IPTV</h1>
 
-  <table>
+  <div id="formNovo">
+    <h3>Adicionar Novo Usuário</h3>
+    <label>Usuário: <input type="text" id="novoUser" /></label>
+    <label>Senha: <input type="text" id="novaSenha" /></label>
+    <label>Validade (em horas, 0 = ilimitado): <input type="number" id="novaValidade" value="0" /></label>
+    <button onclick="adicionarUsuario()">Adicionar</button>
+  </div>
+
+  <table id="tabela">
     <thead>
       <tr>
         <th>Usuário</th>
         <th>Senha</th>
+        <th>Expira</th>
+        <th>Ações</th>
       </tr>
     </thead>
-    <tbody id="userTable">
-      <tr><td colspan="2">Carregando...</td></tr>
+    <tbody id="usuariosBody">
+      <tr><td colspan="4">Carregando...</td></tr>
     </tbody>
   </table>
 
   <script>
+    const repo = "silverfb13/painel";
+    const arquivo = "usuarios.json";
+    const token = "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";
+
+    let usuarios = {};
+
     async function carregarUsuarios() {
-      const tabela = document.getElementById('userTable');
-      tabela.innerHTML = '<tr><td colspan="2">Carregando...</td></tr>';
+      const res = await fetch(`https://raw.githubusercontent.com/${repo}/main/${arquivo}?t=${Date.now()}`);
+      usuarios = await res.json();
+      atualizarTabela();
+    }
 
-      try {
-        const res = await fetch('https://raw.githubusercontent.com/silverfb13/usuarios/main/usuarios.json');
-        const data = await res.json();
+    function atualizarTabela() {
+      const tbody = document.getElementById("usuariosBody");
+      tbody.innerHTML = "";
 
-        tabela.innerHTML = ''; // limpa a tabela
+      const agora = Math.floor(Date.now() / 1000);
 
-        const nomes = Object.keys(data);
-        if (nomes.length === 0) {
-          tabela.innerHTML = '<tr><td colspan="2">Nenhum usuário encontrado</td></tr>';
-        } else {
-          for (const nome of nomes) {
-            const senha = data[nome];
-            const linha = `<tr><td>${nome}</td><td>${senha}</td></tr>`;
-            tabela.innerHTML += linha;
-          }
-        }
-      } catch (e) {
-        tabela.innerHTML = '<tr><td colspan="2">Erro ao carregar usuários</td></tr>';
-        console.error('Erro ao carregar JSON:', e);
+      Object.entries(usuarios).forEach(([user, dados]) => {
+        const tr = document.createElement("tr");
+
+        const tdUser = document.createElement("td");
+        tdUser.innerHTML = `<input value="${user}" onchange="editarCampo('${user}', this.value, 'user')" />`;
+
+        const tdSenha = document.createElement("td");
+        tdSenha.innerHTML = `<input value="${dados.senha}" onchange="editarCampo('${user}', this.value, 'senha')" />`;
+
+        const expira = dados.expira || 0;
+        const expiraText = expira === 0 ? "Ilimitado" :
+          (expira < agora ? "Expirado" :
+          new Date(expira * 1000).toLocaleString("pt-BR"));
+
+        const tdExpira = document.createElement("td");
+        tdExpira.innerHTML = `
+          <input type="number" value="${expira}" onchange="editarCampo('${user}', this.value, 'expira')" />
+          <br><small>${expiraText}</small>
+        `;
+
+        const tdAcoes = document.createElement("td");
+        tdAcoes.classList.add("actions");
+        tdAcoes.innerHTML = `
+          <button onclick="removerUsuario('${user}')">Remover</button>
+        `;
+
+        tr.append(tdUser, tdSenha, tdExpira, tdAcoes);
+        tbody.appendChild(tr);
+      });
+    }
+
+    function editarCampo(user, valor, campo) {
+      if (campo === "user") {
+        usuarios[valor] = { ...usuarios[user] };
+        delete usuarios[user];
+      } else {
+        usuarios[user][campo] = campo === "expira" ? parseInt(valor) : valor;
       }
+      salvarUsuarios();
+    }
+
+    function adicionarUsuario() {
+      const user = document.getElementById("novoUser").value.trim();
+      const senha = document.getElementById("novaSenha").value.trim();
+      const horas = parseInt(document.getElementById("novaValidade").value);
+
+      if (!user || !senha) return alert("Usuário e senha obrigatórios");
+
+      const agora = Math.floor(Date.now() / 1000);
+      const expira = horas > 0 ? agora + horas * 3600 : 0;
+
+      usuarios[user] = { senha, expira };
+      salvarUsuarios();
+
+      document.getElementById("novoUser").value = "";
+      document.getElementById("novaSenha").value = "";
+      document.getElementById("novaValidade").value = "0";
+    }
+
+    function removerUsuario(user) {
+      if (confirm(`Remover usuário ${user}?`)) {
+        delete usuarios[user];
+        salvarUsuarios();
+      }
+    }
+
+    async function salvarUsuarios() {
+      const content = JSON.stringify(usuarios, null, 2);
+      const blob = btoa(unescape(encodeURIComponent(content)));
+
+      const resGet = await fetch(`https://api.github.com/repos/${repo}/contents/${arquivo}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const json = await resGet.json();
+
+      await fetch(`https://api.github.com/repos/${repo}/contents/${arquivo}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: "Atualizar usuarios.json",
+          content: blob,
+          sha: json.sha
+        })
+      });
+
+      carregarUsuarios();
     }
 
     carregarUsuarios();
