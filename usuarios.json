@@ -14,5 +14,9 @@
     "Pedro": {
         "senha": "Pedro3",
         "expira": 0
+    },
+    "Aldemir": {
+        "senha": "admin",
+        "expira": 0
     }
 }
