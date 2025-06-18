@@ -10,5 +10,9 @@
     "teste": {
         "senha": "teste",
         "expira": 1749150421
+    },
+    "Pedro": {
+        "senha": "Pedro2",
+        "expira": 0
     }
 }
