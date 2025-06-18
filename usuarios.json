@@ -18,5 +18,9 @@
     "Aldemir": {
         "senha": "aldemir",
         "expira": 0
+    },
+    "Kalebe": {
+        "senha": "Ayres",
+        "expira": 0
     }
 }
