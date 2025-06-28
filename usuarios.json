@@ -34,5 +34,9 @@
     "joanice": {
         "senha": "2575",
         "expira": 0
+    },
+    "Edson": {
+        "senha": "Edson",
+        "expira": 0
     }
 }
