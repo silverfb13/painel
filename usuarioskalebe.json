@@ -6,5 +6,9 @@
     "marcio": {
         "senha": "fernanda",
         "expira": 0
+    },
+    "paulo": {
+        "senha": "050398",
+        "expira": 0
     }
 }
