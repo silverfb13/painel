@@ -6,5 +6,9 @@
     "teste": {
         "senha": "teste",
         "expira": 0
+    },
+    "kalebe": {
+        "senha": "ayres",
+        "expira": 0
     }
 }
