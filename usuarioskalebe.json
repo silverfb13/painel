@@ -2,5 +2,9 @@
     "kalebe": {
         "senha": "ayres",
         "expira": 0
+    },
+    "marcio": {
+        "senha": "fernanda",
+        "expira": 0
     }
 }
