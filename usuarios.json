@@ -38,5 +38,9 @@
     "Edson": {
         "senha": "Edson",
         "expira": 0
+    },
+    "Jailson": {
+        "senha": "Jailson",
+        "expira": 0
     }
 }
