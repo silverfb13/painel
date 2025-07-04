@@ -50,5 +50,9 @@
     "matheus": {
         "senha": "matheus",
         "expira": 1751601491
+    },
+    "fermando": {
+        "senha": "fernando",
+        "expira": 1754240557
     }
 }
