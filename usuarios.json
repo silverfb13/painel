@@ -42,5 +42,9 @@
     "jaqueline": {
         "senha": "jaqueline",
         "expira": 1754344161
+    },
+    "jss2": {
+        "senha": "casa2",
+        "expira": 0
     }
 }
