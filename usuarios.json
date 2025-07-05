@@ -7,10 +7,6 @@
         "senha": "admin",
         "expira": 0
     },
-    "teste": {
-        "senha": "teste",
-        "expira": 0
-    },
     "Pedro": {
         "senha": "Pedro",
         "expira": 0
