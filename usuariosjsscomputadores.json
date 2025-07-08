@@ -2,5 +2,9 @@
     "teste": {
         "senha": "teste",
         "expira": 0
+    },
+    "jsscomputadores": {
+        "senha": "17798822",
+        "expira": 0
     }
 }
