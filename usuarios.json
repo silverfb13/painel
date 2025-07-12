@@ -50,5 +50,9 @@
     "noemi": {
         "senha": "mecenas",
         "expira": 0
+    },
+    "EriFranklin": {
+        "senha": "Franklin8841",
+        "expira": 0
     }
 }
