@@ -58,5 +58,9 @@
     "Carlos": {
         "senha": "Elis",
         "expira": 0
+    },
+    "alessandro": {
+        "senha": "alessandro",
+        "expira": 0
     }
 }
