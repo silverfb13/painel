@@ -62,5 +62,9 @@
     "alessandro": {
         "senha": "alessandro",
         "expira": 0
+    },
+    "arthur": {
+        "senha": "arthur",
+        "expira": 1758865869
     }
 }
