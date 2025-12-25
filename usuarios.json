@@ -70,5 +70,9 @@
     "Cardoso": {
         "senha": "Cardoso",
         "expira": 0
+    },
+    "joci": {
+        "senha": "joci",
+        "expira": 1766679484
     }
 }
