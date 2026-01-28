@@ -70,5 +70,9 @@
     "joci": {
         "senha": "joci",
         "expira": 1766679484
+    },
+    "Max": {
+        "senha": "Max",
+        "expira": 0
     }
 }
