@@ -74,5 +74,9 @@
     "Max": {
         "senha": "Max",
         "expira": 0
+    },
+    "mauricio": {
+        "senha": "12345",
+        "expira": 1791578127
     }
 }
