@@ -78,5 +78,9 @@
     "mauricio": {
         "senha": "12345",
         "expira": 1791578127
+    },
+    "juan": {
+        "senha": "lfbs1706",
+        "expira": 0
     }
 }
